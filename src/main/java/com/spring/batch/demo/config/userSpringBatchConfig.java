@@ -18,6 +18,8 @@ import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 
 @Configuration
 @EnableBatchProcessing
@@ -31,7 +33,7 @@ public class userSpringBatchConfig {
 
     public FlatFileItemReader<User> reader(){
         FlatFileItemReader<User> reader = new FlatFileItemReader<>();
-        reader.setResource(new FileSystemResource("/src/main/resources/user_data.csv"));
+        reader.setResource(new FileSystemResource("src\\main\\resources\\user_data1.csv"));
         reader.setName("user-reader");
         reader.setLinesToSkip(1);
         reader.setLineMapper(linrMapper());
@@ -75,6 +77,7 @@ public class userSpringBatchConfig {
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
+                .taskExecutor(taskExecutor())
                 .build();
 
     }
@@ -84,4 +87,11 @@ public class userSpringBatchConfig {
         return jobBuilderFactory.get("user-job").flow(step1()).end().build();
     }
 
+
+    @Bean
+    public TaskExecutor taskExecutor(){
+        SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
+        simpleAsyncTaskExecutor.setConcurrencyLimit(10);
+        return simpleAsyncTaskExecutor;
+    }
 }
